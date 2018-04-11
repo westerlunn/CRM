@@ -56,7 +56,7 @@ namespace CRM
         {
             while (true)
             {
-                Console.WriteLine("1: View customers \n2: Create customer \n3: Remove customer \n4: Update customer");
+                Console.WriteLine("1: View customers \n2: Create customer \n3: Remove customer \n4: Update customer \n5: Quit");
                 var userChoice = Console.ReadLine();
 
                 if (userChoice == "1")
@@ -107,7 +107,14 @@ namespace CRM
 
         public static void GetCustomers()
         {
-            var sql = @"SELECT [ID], [firstName], [lastName], [email], [phoneNumber] FROM Customer";
+            //var sql = @"SELECT [ID], [firstName], [lastName], [email], [phoneNumber] FROM Customer";
+            var sql = @"SELECT Customer.ID, firstName, lastName, email,
+                STUFF((SELECT cast(', ' AS nvarchar(MAX)) + PhoneNumbers.phoneNumber
+                FROM PhoneNumbers
+                WHERE Customer.ID = PhoneNumbers.customerID
+                FOR XML PATH('')
+				), 1, 1, '') AS phoneNumber
+				FROM Customer";
 
             using (SqlConnection connection = new SqlConnection(conString))
             using (SqlCommand command = new SqlCommand(sql, connection))
