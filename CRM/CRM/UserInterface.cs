@@ -12,7 +12,7 @@ namespace CRM
         {
             while (true)
             {
-                Console.WriteLine("1: View customers \n2: Create customer \n3: Remove customer \n4: Update customer \n5: Quit");
+                Console.WriteLine("1: View customers \n2: Create customer \n3: Add phone number to existing customer \n4: Remove customer \n5: Update customer \n6: Quit");
                 var userChoice = Console.ReadLine();
 
                 switch (userChoice)
@@ -21,17 +21,21 @@ namespace CRM
                         PrintCustomers();
                         break;
                     case "2":
-                        CreateCustomer();
+                        var id = CreateCustomer();
+                        AddPhone(id);
                         break;
                     case "3":
-                        RemoveCustomer();
+                        CreatePhone();
                         break;
                     case "4":
+                        RemoveCustomer();
+                        break;
+                    case "5":
                         EditCustomer();
                         break;
                 }
 
-                if (userChoice == "5")
+                if (userChoice == "6")
                     break;
             }
         }
@@ -51,7 +55,7 @@ namespace CRM
             GetDatabase.RemoveCustomerFromDatabase(id);
         }
 
-        private static void CreateCustomer()
+        private static int CreateCustomer()
         {
             Console.Write("First name: ");
             var firstName = Console.ReadLine();
@@ -59,9 +63,23 @@ namespace CRM
             var lastName = Console.ReadLine();
             Console.Write("Email: ");
             var mail = Console.ReadLine();
+            
+            return GetDatabase.NewAddCustomerToDatabase(firstName, lastName, mail);
+            
+        }
+
+        private static void AddPhone(int customerId)
+        {
             Console.Write("Phone number: ");
-            var number = Console.ReadLine();
-            GetDatabase.AddCustomerToDatabase(firstName, lastName, mail, number);
+            var phoneNumber = Console.ReadLine();
+            GetDatabase.AddPhoneNumber(customerId, phoneNumber);
+        }
+
+        private static void CreatePhone()
+        {
+            Console.Write("Add number to customer ID: ");
+            var customerId = Convert.ToInt32(Console.ReadLine());
+            AddPhone(customerId);
         }
 
         private static void EditCustomer()

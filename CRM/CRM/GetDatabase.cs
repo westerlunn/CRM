@@ -38,15 +38,7 @@ namespace CRM
         public static DataTable GetCustomersFromDatabase()
         {
             //var sql = @"SELECT [ID], [firstName], [lastName], [email], [phoneNumber] FROM Customer";
-            /*
-            var sql = @"SELECT Customer.ID, firstName, lastName, email,
-                STUFF((SELECT cast(', ' AS nvarchar(MAX)) + PhoneNumbers.phoneNumber
-                FROM PhoneNumbers
-                WHERE Customer.ID = PhoneNumbers.customerID
-                FOR XML PATH('')
-				), 1, 1, '') AS phoneNumber
-				FROM Customer";
-                */
+           
             var sql = @"SELECT Customer.ID, firstName, lastName, email, phoneNumber from Customer full join PhoneNumbers ON Customer.ID = PhoneNumbers.customerID";
             DataTable dataTable = new DataTable();
 
@@ -67,8 +59,7 @@ namespace CRM
 
                     while (reader.Read())
                     {
-                        dataTable.Rows.Add(reader.GetInt32(0), reader.GetString(1) + " " + reader.GetString(2), reader.GetString(3), reader
-                            .GetString(4));
+                        dataTable.Rows.Add(reader.GetInt32(0), reader.GetString(1) + " " + reader.GetString(2), reader.GetString(3), reader.GetString(4));
                     }
                 }
             }
@@ -87,11 +78,11 @@ namespace CRM
                 connection.Open();
                 command.ExecuteNonQuery();
             }
-        }
+        } //not using
 
-        public static void NewCreateCustomer(string firstName, string lastName, string mail, string number)
+        public static int NewAddCustomerToDatabase(string firstName, string lastName, string mail)
         {
-            var newCustomerCommand = $@"insert into Customer(firstName, lastName, email, phoneNumber) values (@firstName, @lastName, @mail, @number)";
+            var newCustomerCommand = $@"insert into Customer (firstName, lastName, email) values (@firstName, @lastName, @mail) SELECT SCOPE_IDENTITY()";
 
             using (SqlConnection connection = new SqlConnection(conString))
             using (SqlCommand command = new SqlCommand(newCustomerCommand, connection))
@@ -99,29 +90,49 @@ namespace CRM
                 connection.Open();
 
                 command.Parameters.AddWithValue("@firstName", firstName);
-                command.Parameters.AddWithValue("@firstName", lastName);
+                command.Parameters.AddWithValue("@lastName", lastName);
                 command.Parameters.AddWithValue("@mail", mail);
-                command.Parameters.AddWithValue("@number", number);
+                //command.Parameters.AddWithValue("@number", number);
+
+                return Convert.ToInt32(command.ExecuteScalar());
+            }
+        }
+
+        public static void AddPhoneNumber(int customerId, string phoneNumber)
+        {
+            var newPhoneNumberCommand = @"insert into PhoneNumbers(customerID, phoneNumber) values (@customerId, @number)";
+
+            using (SqlConnection connection = new SqlConnection(conString))
+            using (SqlCommand command = new SqlCommand(newPhoneNumberCommand, connection))
+            {
+                connection.Open();
+
+                command.Parameters.AddWithValue("@customerId", customerId);
+                command.Parameters.AddWithValue("@number", phoneNumber);
 
                 command.ExecuteNonQuery();
             }
         }
-
+       
         public static void RemoveCustomerFromDatabase(Int32 id)   
         {
-            var deleteCommand = $"DELETE FROM Customer WHERE ID = @IDNumber";
+            //var deleteCommand = $"DELETE FROM Customer WHERE ID = @IDNumber";
+            //var deleteCommand = $"DELETE FROM PhoneNumbers \r\nwhere id = @customerID;\r\nDELETE FROM Customer\r\nWHERE ID = @IDNumber;";
+            var deleteCommand =
+                $"DELETE FROM PhoneNumbers \r\nWHERE customerID = @IDNumber;\r\nDELETE FROM Customer\r\nWHERE Customer.ID = @IDNumber;";
 
             using (SqlConnection connection = new SqlConnection(conString))
             using (SqlCommand command = new SqlCommand(deleteCommand, connection))
             {
                 connection.Open();
-
+                //command.Parameters.Add("@customerID", SqlDbType.Int);
+                //command.Parameters["@customerID"].Value = id; 
                 command.Parameters.Add("@IDNumber", SqlDbType.Int);  
                 command.Parameters["@IDNumber"].Value = id;
                 command.ExecuteNonQuery();
             }
-        }
-
+        } 
+        
         public static void UpdateCustomer(Int32 id, string firstName, string lastName, string mail, string number)
         {
             var updateCommand = $"UPDATE Customer SET firstName = @firstName, lastName = @lastName, email = @mail, phoneNumber = @number WHERE ID = @IDNumber";
