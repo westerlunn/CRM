@@ -12,7 +12,13 @@ namespace CRM
         {
             while (true)
             {
-                Console.WriteLine("1: View customers \n2: Create customer \n3: Add phone number to existing customer \n4: Remove customer \n5: Update customer \n6: Quit");
+                Console.WriteLine("1: View customers \n" +
+                                  "2: Create customer \n" +
+                                  "3: Add phone number to existing customer \n" +
+                                  "4: Remove customer \n" +
+                                  "5: Update customer \n" +
+                                  "6: Remove phone number \n" +
+                                  "7: Quit");
                 var userChoice = Console.ReadLine();
 
                 switch (userChoice)
@@ -33,11 +39,32 @@ namespace CRM
                     case "5":
                         EditCustomer();
                         break;
+                    case "6":
+                        RemoveCustomerPhoneNumber();
+                        break;
                 }
 
-                if (userChoice == "6")
+                if (userChoice == "7")
                     break;
             }
+        }
+
+        private static void RemoveCustomerPhoneNumber()
+        {
+            Console.Write("From which customer ID do you want to remove a phone number? ");
+            var id = Convert.ToInt32(Console.ReadLine());
+            var phoneNumberList = GetDatabase.GetPhoneNumberList(id);
+            var counter = 1;
+            foreach (var phoneNumber in phoneNumberList)
+            {
+                Console.WriteLine($"{counter}: {phoneNumber}");
+                counter++;
+            }
+
+            Console.Write("Which phone number (1,2,3) do you want to remove? ");
+            var number = Convert.ToInt32(Console.ReadLine()) - 1;
+
+            GetDatabase.RemovePhoneNumberFromDatabase(id, phoneNumberList[number]);
         }
 
         private static void PrintCustomers()
@@ -92,10 +119,10 @@ namespace CRM
             var lastName = Console.ReadLine();
             Console.Write("Email: ");
             var mail = Console.ReadLine();
-            Console.Write("Phone number: ");
-            var number = Console.ReadLine();
+            //Console.Write("Phone number: ");
+            //var number = Console.ReadLine();
 
-            GetDatabase.UpdateCustomer(id, firstName, lastName, mail, number);
+            GetDatabase.UpdateCustomer(id, firstName, lastName, mail); //, number
         }
     }
 }

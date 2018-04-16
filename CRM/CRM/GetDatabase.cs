@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using ConsoleTableExt;
@@ -39,7 +40,9 @@ namespace CRM
         {
             //var sql = @"SELECT [ID], [firstName], [lastName], [email], [phoneNumber] FROM Customer";
            
-            var sql = @"SELECT Customer.ID, firstName, lastName, email, phoneNumber from Customer full join PhoneNumbers ON Customer.ID = PhoneNumbers.customerID";
+            var sql = @"SELECT Customer.ID, firstName, lastName, email, phoneNumber 
+                        from Customer 
+                        full join PhoneNumbers ON Customer.ID = PhoneNumbers.customerID";
             DataTable dataTable = new DataTable();
 
             using (SqlConnection connection = new SqlConnection(conString))
@@ -65,6 +68,31 @@ namespace CRM
             }
 
             return dataTable;
+        }
+
+        public static List<string> GetPhoneNumberList(int customerID)
+        {
+            var sql = @"SELECT phoneNumber 
+                        FROM PhoneNumbers 
+                        WHERE customerID = @customerID";
+
+            using (SqlConnection connection = new SqlConnection(conString))
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                connection.Open();
+
+                command.Parameters.AddWithValue("customerID", customerID);
+
+                SqlDataReader reader = command.ExecuteReader();
+                var phoneNumbers = new List<string>();
+
+                while (reader.Read())
+                {
+                    phoneNumbers.Add(reader.GetString(0));
+                }
+
+                return phoneNumbers;
+            }
         }
 
         public static void AddCustomerToDatabase(string firstName, string lastName, string mail, string number)
@@ -131,11 +159,31 @@ namespace CRM
                 command.Parameters["@IDNumber"].Value = id;
                 command.ExecuteNonQuery();
             }
-        } 
-        
-        public static void UpdateCustomer(Int32 id, string firstName, string lastName, string mail, string number)
+        }
+
+        public static void RemovePhoneNumberFromDatabase(int id, string number)
         {
-            var updateCommand = $"UPDATE Customer SET firstName = @firstName, lastName = @lastName, email = @mail, phoneNumber = @number WHERE ID = @IDNumber";
+            var deleteCommand = "DELETE FROM PhoneNumbers WHERE customerID = @ID AND phoneNumber = @number";
+            
+            using (var connection = new SqlConnection(conString))
+            using (var command = new SqlCommand(deleteCommand, connection))
+            {
+                connection.Open();
+
+                command.Parameters.AddWithValue("ID", id);
+                command.Parameters.AddWithValue("number", number);
+
+                command.ExecuteNonQuery();
+            }
+        }
+        
+        public static void UpdateCustomer(Int32 id, string firstName, string lastName, string mail) //, string number
+        {
+            //var updateCommand = $"UPDATE Customer SET firstName = @firstName, lastName = @lastName, email = @mail, phoneNumber = @number WHERE ID = @IDNumber";
+            var updateCommand =
+                $"UPDATE Customer SET firstName = @firstName, lastName = @lastName, email = @mail WHERE ID = @IDNumber;";
+            // UPDATE PhoneNumbers SET phoneNumber = @number WHERE customerID = @IDNumber;
+            //var updateCommand = "DELETE FROM PhoneNumbers WHERE customerID = @IDNumber; UPDATE Customer SET firstName = @firstName, lastName = @lastName, email = @mail WHERE ID = @IDNumber; UPDATE PhoneNumbers SET phoneNumber = @number WHERE customerID = @IDNumber;";
 
             using (SqlConnection connection = new SqlConnection(conString))
             using (SqlCommand command = new SqlCommand(updateCommand, connection))
@@ -148,7 +196,7 @@ namespace CRM
                 command.Parameters.AddWithValue("@firstName", firstName);
                 command.Parameters.AddWithValue("@lastName", lastName);
                 command.Parameters.AddWithValue("@mail", mail);
-                command.Parameters.AddWithValue("@number", number);
+                //command.Parameters.AddWithValue("@number", number);
 
                 command.ExecuteNonQuery();
             }
