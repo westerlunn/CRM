@@ -25,16 +25,7 @@ namespace CRM
                 {
                     case "1":
                         var list = GetDatabase.GetCustomersListFromDatabase();
-                        //ShowCustomers(list);
-                        //var phoneList = GetDatabase.GetPhoneNumberList();
-                        Console.WriteLine($"{"ID",-5}{"Name",-30}{"Email",-30}Phone number\n" +
-                                          $"----------------------------------------------------------------------------------------");
-                        foreach (var item in list)
-                        {
-                            ShowCustomers(item);
-                        }
-                        
-                        //PrintCustomers();
+                        ShowCustomers(list);
                         break;
                     case "2":
                         var id = CreateCustomer();
@@ -59,16 +50,17 @@ namespace CRM
             }
         }
 
-        private static void ShowCustomers(Customer customer) //, List<string> phoneNumberList
+        
+
+        private static void ShowCustomers(List<Customer> customerList)
         {
-            //GetDatabase.GetCustomersListFromDatabase(List < Customer > customerList);
-            
-            
+            Console.WriteLine($"{"ID",-5}{"Name",-30}{"Email",-30}Phone number\n" +
+                              $"----------------------------------------------------------------------------------------");
+            foreach (var customer in customerList)
+            {
                 Console.WriteLine(
                     $"{customer.Id,-5}{customer.FirstName,-10}{customer.LastName,-20}{customer.Email,-30}{string.Join(',', customer.PhoneNumbers)}");
-            
-
-
+            }
         }
         private static void RemoveCustomerPhoneNumber()
         {
