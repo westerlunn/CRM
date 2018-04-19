@@ -24,7 +24,14 @@ namespace CRM
                 switch (userChoice)
                 {
                     case "1":
-                        PrintCustomers();
+                        var list = GetDatabase.GetCustomersListFromDatabase();
+                        //var phoneList = GetDatabase.GetPhoneNumberList();
+                        foreach (var item in list)
+                        {
+                            ShowCustomers(item);
+                        }
+                        
+                        //PrintCustomers();
                         break;
                     case "2":
                         var id = CreateCustomer();
@@ -49,6 +56,15 @@ namespace CRM
             }
         }
 
+        private static void ShowCustomers(Customer customer) //, List<string> phoneNumberList
+        {
+            //GetDatabase.GetCustomersListFromDatabase();
+            //Console.WriteLine($"{"ID",-20}{"First name",-20}{"Last name",-20}{"Email",-20}{"Phone number",-20}");
+            
+            Console.WriteLine(
+            $"{customer.Id,-5}{customer.FirstName,-10}{customer.LastName,-20}{customer.Email,-30}{string.Join(',', customer.PhoneNumbers)}");
+            
+        }
         private static void RemoveCustomerPhoneNumber()
         {
             Console.Write("From which customer ID do you want to remove a phone number? ");
@@ -90,9 +106,9 @@ namespace CRM
             var lastName = Console.ReadLine();
             Console.Write("Email: ");
             var mail = Console.ReadLine();
-            
+
             return GetDatabase.NewAddCustomerToDatabase(firstName, lastName, mail);
-            
+
         }
 
         private static void AddPhone(int customerId)

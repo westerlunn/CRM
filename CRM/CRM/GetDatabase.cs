@@ -70,6 +70,37 @@ namespace CRM
             return dataTable;
         }
 
+        public static List<Customer> GetCustomersListFromDatabase()
+        {
+            var customerList = new List<Customer>();
+            var c = new Customer();
+            var sql = @"SELECT Customer.ID, firstName, lastName, email, phoneNumber 
+                        from Customer 
+                        full join PhoneNumbers ON Customer.ID = PhoneNumbers.customerID";
+            using (var connection = new SqlConnection(conString))
+            using (var command = new SqlCommand(sql, connection))
+            {
+                connection.Open();
+                SqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var customer = new Customer()
+                    {
+                        Id = reader.GetInt32(0),
+                        FirstName = reader.GetString(1),
+                        LastName = reader.GetString(2),
+                        Email = reader.GetString(3)
+                    };
+
+                    customer.PhoneNumbers = GetPhoneNumberList(customer.Id);
+
+                    customerList.Add(customer);
+                }
+            }
+            return customerList;
+        }
+
         public static List<string> GetPhoneNumberList(int customerID)
         {
             var sql = @"SELECT phoneNumber 
