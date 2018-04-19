@@ -74,9 +74,10 @@ namespace CRM
         {
             var customerList = new List<Customer>();
             var c = new Customer();
-            var sql = @"SELECT Customer.ID, firstName, lastName, email, phoneNumber 
-                        from Customer 
-                        full join PhoneNumbers ON Customer.ID = PhoneNumbers.customerID";
+           
+            var sql = @"SELECT Customer.ID, firstName, lastName, email 
+                        from Customer";
+
             using (var connection = new SqlConnection(conString))
             using (var command = new SqlCommand(sql, connection))
             {
@@ -92,9 +93,9 @@ namespace CRM
                         LastName = reader.GetString(2),
                         Email = reader.GetString(3)
                     };
-
+                    
                     customer.PhoneNumbers = GetPhoneNumberList(customer.Id);
-
+                    
                     customerList.Add(customer);
                 }
             }
